@@ -12,6 +12,7 @@ export default defineConfig({
       buffer: "buffer",
     },
   },
+  base: "./", // <-- ensures relative paths for Netlify
   server: {
     proxy: {
       "/api": {
