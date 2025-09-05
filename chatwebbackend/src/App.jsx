@@ -15,7 +15,7 @@ function App() {
   const createRoom = async () => {
     if (!name.trim()) return alert("Enter your name first!");
     try {
-      const res = await api.post("/create"); // Updated endpoint
+      const res = await api.post("api/create"); // Updated endpoint
       setRoomCode(res.data);
       connect(res.data);
     } catch (err) {
@@ -29,7 +29,7 @@ function App() {
     if (!name.trim()) return alert("Enter your name first!");
     if (!roomCode.trim()) return alert("Enter a room code first!");
     try {
-      const res = await api.get(`/exists/${roomCode}`); // Updated endpoint
+      const res = await api.get(`api/exists/${roomCode}`); // Updated endpoint
       if (res.data) connect(roomCode);
       else alert("Invalid Room Code");
     } catch (err) {
