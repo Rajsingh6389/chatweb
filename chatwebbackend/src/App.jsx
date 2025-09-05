@@ -11,35 +11,43 @@ function App() {
   const [joined, setJoined] = useState(false);
   const [name, setName] = useState("");
 
+  // ✅ Create Room
   const createRoom = async () => {
-    if (!name.trim()) {
-      alert("Enter your name first!");
-      return;
+    if (!name.trim()) return alert("Enter your name first!");
+    try {
+      const res = await api.post("/create"); // Updated endpoint
+      setRoomCode(res.data);
+      connect(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create room");
     }
-    const res = await api.post("/room/create");
-    setRoomCode(res.data);
-    connect(res.data);
   };
 
+  // ✅ Join Room
   const joinRoom = async () => {
-    if (!name.trim()) {
-      alert("Enter your name first!");
-      return;
-    }
-    if (!roomCode.trim()) {
-      alert("Enter a room code first!");
-      return;
-    }
-    const res = await api.get(`/room/exists/${roomCode}`);
-    if (res.data) {
-      connect(roomCode);
-    } else {
-      alert("Invalid Room Code");
+    if (!name.trim()) return alert("Enter your name first!");
+    if (!roomCode.trim()) return alert("Enter a room code first!");
+    try {
+      const res = await api.get(`/exists/${roomCode}`); // Updated endpoint
+      if (res.data) connect(roomCode);
+      else alert("Invalid Room Code");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to join room");
     }
   };
 
+  // ✅ Connect WebSocket
   const connect = (code) => {
-    const socket = new SockJS(`${import.meta.env.MODE === "production" ? "https://chatweb-production-91d6.up.railway.app" : ""}/api/chat`);
+    const socket = new SockJS(
+      `${
+        import.meta.env.MODE === "production"
+          ? "https://chatweb-production-91d6.up.railway.app"
+          : ""
+      }/api/chat`
+    );
+
     const client = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
@@ -53,18 +61,18 @@ function App() {
     setStompClient(client);
   };
 
+  // ✅ Send message
   const sendMessage = () => {
-    if (stompClient && input.trim() !== "") {
-      stompClient.publish({
-        destination: "/app/send",
-        body: JSON.stringify({
-          roomCode,
-          sender: name,
-          content: input,
-        }),
-      });
-      setInput("");
-    }
+    if (!stompClient || !input.trim()) return;
+    stompClient.publish({
+      destination: "/app/send",
+      body: JSON.stringify({
+        roomCode,
+        sender: name,
+        content: input,
+      }),
+    });
+    setInput("");
   };
 
   return (
